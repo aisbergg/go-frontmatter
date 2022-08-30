@@ -8,47 +8,31 @@
 <h3 align="center">Go library for detecting and decoding various content front matter formats.</h3>
 
 <p align="center">
-    <a href="https://github.com/adrg/frontmatter/actions?query=workflow%3ACI">
-        <img alt="Build status" src="https://github.com/adrg/frontmatter/workflows/CI/badge.svg">
-    </a>
-    <a href="https://codecov.io/gh/adrg/frontmatter">
-        <img alt="Code coverage" src="https://codecov.io/gh/adrg/frontmatter/branch/master/graphs/badge.svg?branch=master">
-    </a>
-    <a href="https://pkg.go.dev/github.com/adrg/frontmatter">
-        <img alt="pkg.go.dev documentation" src="https://pkg.go.dev/badge/github.com/adrg/frontmatter">
+    <a href="https://pkg.go.dev/github.com/aisbergg/go-frontmatter">
+        <img alt="pkg.go.dev documentation" src="https://pkg.go.dev/badge/github.com/aisbergg/go-frontmatter">
     </a>
     <a href="https://opensource.org/licenses/MIT" rel="nofollow">
         <img alt="MIT License" src="https://img.shields.io/github/license/adrg/frontmatter"/>
     </a>
     <br />
-    <a href="https://goreportcard.com/report/github.com/adrg/frontmatter">
-        <img alt="Go report card" src="https://goreportcard.com/badge/github.com/adrg/frontmatter?style=flat" />
+    <a href="https://goreportcard.com/report/github.com/aisbergg/go-frontmatter">
+        <img alt="Go report card" src="https://goreportcard.com/badge/github.com/aisbergg/go-frontmatter?style=flat" />
     </a>
-    <a href="https://github.com/adrg/frontmatter/graphs/contributors">
+    <a href="https://github.com/aisbergg/go-frontmatter/graphs/contributors">
         <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/adrg/frontmatter" />
     </a>
-    <a href="https://github.com/adrg/frontmatter/issues?q=is%3Aopen+is%3Aissue">
+    <a href="https://github.com/aisbergg/go-frontmatter/issues?q=is%3Aopen+is%3Aissue">
         <img alt="GitHub open issues" src="https://img.shields.io/github/issues-raw/adrg/frontmatter">
     </a>
-    <a href="https://github.com/adrg/frontmatter/issues?q=is%3Aissue+is%3Aclosed">
+    <a href="https://github.com/aisbergg/go-frontmatter/issues?q=is%3Aissue+is%3Aclosed">
         <img alt="GitHub closed issues" src="https://img.shields.io/github/issues-closed-raw/adrg/frontmatter" />
     </a>
-    <a href="https://ko-fi.com/T6T72WATK">
-        <img alt="Buy me a coffee" src="https://img.shields.io/static/v1.svg?label=%20&message=Buy%20me%20a%20coffee&color=579fbf&logo=buy%20me%20a%20coffee&logoColor=white"/>
-    </a>
-
-## Supported formats
-
-The following front matter formats are supported by default. If the default
-formats are not suitable for your use case, you can easily bring your own.
-For more information, see the [usage examples](#usage) below.
-
-![Default front matter formats](https://raw.githubusercontent.com/adrg/adrg.github.io/master/assets/projects/frontmatter/formats.png)
+</p>
 
 ## Installation
 
-```bash
-go get github.com/adrg/frontmatter
+```sh
+go get github.com/aisbergg/go-frontmatter
 ```
 
 ## Usage
@@ -62,39 +46,46 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/adrg/frontmatter"
+	"github.com/aisbergg/go-frontmatter/pkg/frontmatter"
 )
 
 var input = `
+---json
+{
+  "name": "frontmatter",
+  "tags": ["foo", "bar", "baz"]
+}
 ---
-name: "frontmatter"
-tags: ["go", "yaml", "json", "toml"]
----
-rest of the content`
+rest of the content
+`
 
 func main() {
 	var matter struct {
-		Name string   `yaml:"name"`
-		Tags []string `yaml:"tags"`
+		Name string   `json:"name"`
+		Tags []string `json:"tags"`
 	}
 
-	rest, err := frontmatter.Parse(strings.NewReader(input), &matter)
+	body, err := frontmatter.Parse(strings.NewReader(input), &matter)
 	if err != nil {
-		// Treat error.
+		panic(err)
 	}
 	// NOTE: If a front matter must be present in the input data, use
 	//       frontmatter.MustParse instead.
 
 	fmt.Printf("%+v\n", matter)
-	fmt.Println(string(rest))
+	fmt.Println(string(body))
 
 	// Output:
-	// {Name:frontmatter Tags:[go yaml json toml]}
+	// {Name:frontmatter Tags:[foo bar baz]}
 	// rest of the content
 }
 ```
 
 **Bring your own formats.**
+
+> This library includes only a JSON format by default. This removes the need for external dependencies and gives your the freedom to choose whatever unmarshaller library you want.
+
+If you like to use any other formats than JSON, you can easily add them. Here is how:
 
 ```go
 package main
@@ -103,16 +94,17 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/adrg/frontmatter"
-	"gopkg.in/yaml.v2"
+	"github.com/aisbergg/go-frontmatter"
+	"gopkg.in/yaml.v3"
 )
 
 var input = `
-...
+---
 name: "frontmatter"
-tags: ["go", "yaml", "json", "toml"]
+"tags": ["foo", "bar", "baz"]
 ...
-rest of the content`
+rest of the content
+`
 
 func main() {
 	var matter struct {
@@ -121,7 +113,7 @@ func main() {
 	}
 
 	formats := []*frontmatter.Format{
-		frontmatter.NewFormat("...", "...", yaml.Unmarshal),
+		frontmatter.NewFormat("---", "...", yaml.Unmarshal),
 	}
 
 	rest, err := frontmatter.Parse(strings.NewReader(input), &matter, formats...)
@@ -135,25 +127,21 @@ func main() {
 	fmt.Println(string(rest))
 
 	// Output:
-	// {Name:frontmatter Tags:[go yaml json toml]}
+	// {Name:frontmatter Tags:[foo bar baz]}
 	// rest of the content
 }
 ```
 
-Full documentation can be found at: https://pkg.go.dev/github.com/adrg/frontmatter.
-
-## Stargazers over time
-
-[![Stargazers over time](https://starchart.cc/adrg/frontmatter.svg)](https://starchart.cc/adrg/frontmatter)
+Full documentation can be found at: https://pkg.go.dev/github.com/aisbergg/go-frontmatter.
 
 ## Contributing
 
-Contributions in the form of pull requests, issues or just general feedback,
-are always welcome. See [CONTRIBUTING.MD](CONTRIBUTING.md).
+Contributions in the form of pull requests, issues or just general feedback, are always welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## License
+## Acknowledgements
 
-Copyright (c) 2020 Adrian-George Bostan.
+This project is a fork of [github.com/adrg/frontmatter](https://github.com/adrg/frontmatter) developed by [Adrian-George Bostan](https://github.com/adrg). This fork removes the external dependencies and improves performance.
 
-This project is licensed under the [MIT license](https://opensource.org/licenses/MIT).
-See [LICENSE](LICENSE) for more details.
+## Licence
+
+This project is under the MIT Licence. See the [LICENCE](LICENCE) file for the full license text.

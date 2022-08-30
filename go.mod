@@ -1,3 +1,3 @@
-module github.com/aisbergg/frontmatter
+module github.com/aisbergg/go-frontmatter
 
 go 1.14

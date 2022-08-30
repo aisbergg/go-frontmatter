@@ -1,23 +1,12 @@
-/*
-Package frontmatter implements detection and decoding for various content
-front matter formats.
-
-  The following front matter formats are supported by default.
-
-  - YAML identified by:
-    • opening and closing `---` lines.
-    • opening `---yaml` and closing `---` lines.
-  - TOML identified by:
-    • opening and closing `+++` lines.
-    • opening `---toml` and closing `---` lines.
-  - JSON identified by:
-    • opening and closing `;;;` lines.
-    • opening `---json` and closing `---` lines.
-    • a single JSON object followed by an empty line.
-
-If the default formats are not suitable for your use case, you can easily bring
-your own. See the examples for more information.
-*/
+// Package frontmatter implements detection and decoding for various content
+// front matter formats.
+//
+// By default only JSON is supported, which is identified as follows:
+//   - opening and closing `;;;` lines.
+//   - opening `---json` and closing `---` lines.
+//   - a single JSON object followed by an empty line.
+//
+// Any other formats can be easily added. See the examples for more information.
 package frontmatter
 
 import (
