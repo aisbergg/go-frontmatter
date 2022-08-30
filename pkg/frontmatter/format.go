@@ -2,9 +2,6 @@ package frontmatter
 
 import (
 	"encoding/json"
-
-	"github.com/BurntSushi/toml"
-	"gopkg.in/yaml.v2"
 )
 
 // UnmarshalFunc decodes the passed in `data` and stores it into
@@ -56,13 +53,7 @@ func newFormat(start, end string, unmarshal UnmarshalFunc,
 
 func defaultFormats() []*Format {
 	return []*Format{
-		// YAML.
-		newFormat("---", "---", yaml.Unmarshal, false, false),
-		newFormat("---yaml", "---", yaml.Unmarshal, false, false),
-		// TOML.
-		newFormat("+++", "+++", toml.Unmarshal, false, false),
-		newFormat("---toml", "---", toml.Unmarshal, false, false),
-		// JSON.
+		// JSON, any other format you have to specify yourself
 		newFormat(";;;", ";;;", json.Unmarshal, false, false),
 		newFormat("---json", "---", json.Unmarshal, false, false),
 		newFormat("{", "}", json.Unmarshal, true, true),
